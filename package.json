@@ -1,6 +1,6 @@
 {
   "name": "@joelhooks/pi-fast-jev-compaction",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Verbatim context pruning for Pi using TypeSafe Jev decisions.",
   "keywords": [
     "compaction",
@@ -40,7 +40,6 @@
     "demo": "node --experimental-strip-types examples/demo.ts"
   },
   "dependencies": {
-    "@earendil-works/pi-tui": "0.85.1",
     "xstate": "5.32.5"
   },
   "devDependencies": {
@@ -61,6 +60,7 @@
     "@earendil-works/pi-agent-core": "*",
     "@earendil-works/pi-ai": "*",
     "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
     "typebox": "*"
   },
   "peerDependenciesMeta": {
@@ -81,12 +81,12 @@
     "packageManager": {
       "name": "npm",
       "version": "11.16.0",
-      "onFail": "error"
+      "onFail": "warn"
     },
     "runtime": {
       "name": "node",
       "version": ">=24.18.0 <25",
-      "onFail": "error"
+      "onFail": "warn"
     }
   },
   "engines": {

@@ -78,6 +78,24 @@ Add `fastJevCompaction` to `~/.pi/agent/settings.json` or a trusted project's `.
 
 Project settings override global settings after Pi marks the project trusted.
 
+Each knob also has a `FAST_JEV_*` environment name shared by every harness (omp,
+Claude Code, OpenCode), so a single shell export tunes them all. Precedence is:
+**`settings.json` wins, then the environment, then the default.** A malformed or
+out-of-range value is ignored and the default stands.
+
+| Setting | Environment variable |
+| --- | --- |
+| `keepThreshold` | `FAST_JEV_KEEP_THRESHOLD` |
+| `preserveRecentMessages` | `FAST_JEV_PRESERVE_RECENT` |
+| `maxStateTokens` | `FAST_JEV_MAX_STATE_TOKENS` |
+| `maxRequestTokens` | `FAST_JEV_MAX_REQUEST_TOKENS` |
+| `truncateHeadChars` | `FAST_JEV_TRUNCATE_HEAD_CHARS` |
+| `compactAtPercent` | `FAST_JEV_COMPACT_AT_PERCENT` |
+| `minReductionRatio` | `FAST_JEV_MIN_REDUCTION` |
+| `cooldownTokens` | `FAST_JEV_COOLDOWN_TOKENS` |
+| `model` | `FAST_JEV_MODEL` |
+| `baseUrl` | `FAST_JEV_BASE_URL` |
+
 | Setting | Meaning |
 | --- | --- |
 | `enabled` | Enable pruning for the session. |

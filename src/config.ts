@@ -126,6 +126,49 @@ export function parseConfig(
   };
 }
 
+function envNumber(value: string | undefined): number | undefined {
+  if (value === undefined || value.trim() === "") return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+/**
+ * The shared `FAST_JEV_*` names, identical to the ones omp reads, so a single
+ * exported block in a shell profile tunes Pi too. A malformed or out-of-range
+ * value is ignored here and then clamped by `parseConfig`, leaving the default.
+ */
+const NUMERIC_ENV: ReadonlyArray<readonly [string, keyof FastJevConfig]> = [
+  ["FAST_JEV_KEEP_THRESHOLD", "keepThreshold"],
+  ["FAST_JEV_PRESERVE_RECENT", "preserveRecentMessages"],
+  ["FAST_JEV_MAX_STATE_TOKENS", "maxStateTokens"],
+  ["FAST_JEV_MAX_REQUEST_TOKENS", "maxRequestTokens"],
+  ["FAST_JEV_TRUNCATE_HEAD_CHARS", "truncateHeadChars"],
+  ["FAST_JEV_COMPACT_AT_PERCENT", "compactAtPercent"],
+  ["FAST_JEV_MIN_REDUCTION", "minReductionRatio"],
+  ["FAST_JEV_COOLDOWN_TOKENS", "cooldownTokens"],
+];
+
+/**
+ * Build a config from the `FAST_JEV_*` process environment, as the base that
+ * settings.json layers over. Precedence everywhere is: settings.json wins, then
+ * the environment, then the built-in default.
+ */
+export function parseEnvConfig(
+  env: Readonly<Record<string, string | undefined>> = process.env,
+  base: FastJevConfig = DEFAULT_CONFIG
+): FastJevConfig {
+  const value: Record<string, unknown> = {};
+  for (const [name, key] of NUMERIC_ENV) {
+    const parsed = envNumber(env[name]);
+    if (parsed !== undefined) value[key] = parsed;
+  }
+  const model = env.FAST_JEV_MODEL?.trim();
+  if (model) value.model = model;
+  const baseUrl = env.FAST_JEV_BASE_URL?.trim();
+  if (baseUrl) value.baseUrl = baseUrl;
+  return parseConfig(value, base);
+}
+
 export async function loadConfig(
   cwd: string,
   projectTrusted: boolean
@@ -133,7 +176,7 @@ export async function loadConfig(
   const globalSettings = await readSettings(
     join(getAgentDir(), "settings.json")
   );
-  let config = parseConfig(globalSettings.fastJevCompaction);
+  let config = parseConfig(globalSettings.fastJevCompaction, parseEnvConfig());
   if (projectTrusted) {
     const projectSettings = await readSettings(
       join(cwd, CONFIG_DIR_NAME, "settings.json")
