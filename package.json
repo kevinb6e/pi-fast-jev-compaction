@@ -1,6 +1,6 @@
 {
   "name": "@joelhooks/pi-fast-jev-compaction",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Verbatim context pruning for Pi using TypeSafe Jev decisions.",
   "keywords": [
     "compaction",
