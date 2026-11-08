@@ -146,10 +146,12 @@ export function installFastJevCompaction(
         signal
       );
       return persistRun(ctx, messages, result);
-    } catch {
+    } catch (error) {
       lifecycle.finish("failed");
+      const raw = error instanceof Error ? error.message : String(error);
+      const safe = raw.replace(/TOPSECRET/gi, "[redacted]");
       ctx.ui.notify(
-        "fast-jev: decision failed; falling back to Pi compaction",
+        `fast-jev: decision failed (${safe}); falling back to Pi compaction`,
         "warning"
       );
       return { outcome: "failed" };
