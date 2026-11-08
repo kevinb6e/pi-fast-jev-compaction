@@ -148,7 +148,7 @@ function count(
   return decisions.filter((decision) => decision.reason === reason).length;
 }
 
-export async function decide(
+async function decideImpl(
   messages: readonly Message[],
   asker: JevAsker,
   options: CompactOptions = {},
@@ -198,4 +198,69 @@ export async function decide(
       ms: Date.now() - started,
     },
   };
+}
+
+
+function mergeDecisionResults(
+  left: DecisionResult,
+  right: DecisionResult,
+  started: number
+): DecisionResult {
+  const decisions = [...left.decisions, ...right.decisions];
+  const calls = [...left.calls, ...right.calls];
+  return {
+    decisions,
+    calls,
+    stats: {
+      calls: left.stats.calls + right.stats.calls,
+      kept: left.stats.kept + right.stats.kept,
+      resultsDropped: left.stats.resultsDropped + right.stats.resultsDropped,
+      callsDropped: left.stats.callsDropped + right.stats.callsDropped,
+      pinned: left.stats.pinned + right.stats.pinned,
+      stateTokens: left.stats.stateTokens + right.stats.stateTokens,
+      stateStage: left.stats.stateStage,
+      requests: left.stats.requests + right.stats.requests,
+      ms: Date.now() - started,
+    },
+  };
+}
+
+export async function decide(
+  messages: readonly Message[],
+  asker: JevAsker,
+  options: CompactOptions = {},
+  signal?: AbortSignal
+): Promise<DecisionResult> {
+  const started = Date.now();
+  try {
+    return await decideImpl(messages, asker, options, signal);
+  } catch (error) {
+    if (!(error instanceof Error) || !/history too large for Jev/i.test(error.message)) throw error;
+    const resolved = resolveOptions(options);
+    const calls = collectToolCalls(messages, resolved.preserveRecentMessages);
+    if (messages.length <= 1 || calls.length === 0) {
+      const decisions = calls.map((call) =>
+        decideCall(call, { keepCall: 1, keepResult: 1 }, resolved)
+      );
+      return {
+        decisions,
+        calls,
+        stats: {
+          calls: calls.length,
+          kept: calls.length,
+          resultsDropped: 0,
+          callsDropped: 0,
+          pinned: calls.filter((call) => call.pinned).length,
+          stateTokens: 0,
+          stateStage: "split fallback",
+          requests: 0,
+          ms: Date.now() - started,
+        },
+      };
+    }
+    const mid = Math.floor(messages.length / 2);
+    const left = await decide(messages.slice(0, mid), asker, options, signal);
+    const right = await decide(messages.slice(mid), asker, options, signal);
+    return mergeDecisionResults(left, right, started);
+  }
 }
