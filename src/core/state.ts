@@ -314,6 +314,27 @@ export function fitState(
   tokens = baseTokens + perEntry.reduce((sum, count) => sum + count, 0);
   if (fits()) return fitted(history, tokens, "old calls merged");
 
+  // Last resort: shrink pinned message text too. Pinned turns are kept in the
+  // final history, but Jev only needs a hint of them to judge stale calls.
+  for (const index of order) {
+    const entry = history[index];
+    if (!entry || !pinned(entry) || entry.text.length <= 120) continue;
+    shrink(index, (candidate) => {
+      candidate.text = truncate(candidate.text, 120);
+    });
+    if (fits()) return fitted(history, tokens, "pinned texts truncated");
+  }
+
+  // Drop tool calls from the oldest pinned entries if still over budget.
+  for (const index of order) {
+    const entry = history[index];
+    if (!entry || !pinned(entry) || !entry.tool_calls) continue;
+    shrink(index, (candidate) => {
+      candidate.tool_calls = [];
+    });
+    if (fits()) return fitted(history, tokens, "pinned calls dropped from state");
+  }
+
   throw new Error(
     `history too large for Jev (~${tokens} tokens after truncation, limit ${options.maxStateTokens})`
   );
