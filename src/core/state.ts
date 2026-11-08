@@ -59,7 +59,7 @@ export function collectToolCalls(
 ): ToolCall[] {
   const results = new Map<string, { index: number; result: ToolResult }>();
   for (const [index, message] of messages.entries()) {
-    for (const result of message.toolResults) {
+    for (const result of message.toolResults ?? []) {
       results.set(result.toolCallId, { index, result });
     }
   }

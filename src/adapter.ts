@@ -95,8 +95,13 @@ export function adaptMessages(messages: readonly AgentMessage[]): Message[] {
         };
       }
       default: {
-        const unreachable: never = message;
-        return unreachable;
+        return {
+          sourceIndex,
+          role: "user",
+          text: "",
+          toolUses: [],
+          toolResults: [],
+        };
       }
     }
   });
