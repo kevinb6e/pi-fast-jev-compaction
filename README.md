@@ -93,6 +93,7 @@ out-of-range value is ignored and the default stands.
 | `compactAtPercent` | `FAST_JEV_COMPACT_AT_PERCENT` |
 | `minReductionRatio` | `FAST_JEV_MIN_REDUCTION` |
 | `cooldownTokens` | `FAST_JEV_COOLDOWN_TOKENS` |
+| `splitContext` | `FAST_JEV_SPLIT_CONTEXT` |
 | `model` | `FAST_JEV_MODEL` |
 | `baseUrl` | `FAST_JEV_BASE_URL` |
 
