@@ -25,6 +25,7 @@ export const DEFAULT_OPTIONS: ResolvedCompactOptions = {
   maxStateTokens: 25_000,
   maxRequestTokens: 30_000,
   truncateHeadChars: 300,
+  splitContext: true,
 };
 
 const REQUEST_OVERHEAD_TOKENS = 20;
@@ -62,6 +63,10 @@ export function resolveOptions(
         finite(options.truncateHeadChars, DEFAULT_OPTIONS.truncateHeadChars)
       )
     ),
+    splitContext:
+      typeof options.splitContext === "boolean"
+        ? options.splitContext
+        : DEFAULT_OPTIONS.splitContext,
   };
 }
 
@@ -235,8 +240,9 @@ export async function decide(
   try {
     return await decideImpl(messages, asker, options, signal);
   } catch (error) {
-    if (!(error instanceof Error) || !/history too large for Jev/i.test(error.message)) throw error;
     const resolved = resolveOptions(options);
+    if (!(error instanceof Error) || !/history too large for Jev/i.test(error.message)) throw error;
+    if (!resolved.splitContext) throw error;
     const calls = collectToolCalls(messages, resolved.preserveRecentMessages);
     if (messages.length <= 1 || calls.length === 0) {
       const decisions = calls.map((call) =>

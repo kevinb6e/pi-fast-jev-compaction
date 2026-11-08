@@ -19,6 +19,7 @@ export interface FastJevConfig {
   compactAtPercent: number;
   minReductionRatio: number;
   cooldownTokens: number;
+  splitContext: boolean;
 }
 
 export const DEFAULT_CONFIG: FastJevConfig = {
@@ -34,6 +35,7 @@ export const DEFAULT_CONFIG: FastJevConfig = {
   compactAtPercent: 60,
   minReductionRatio: 0.25,
   cooldownTokens: 8000,
+  splitContext: true,
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -123,6 +125,10 @@ export function parseConfig(
     cooldownTokens: Math.floor(
       finiteInRange(value.cooldownTokens, base.cooldownTokens, 0, 1_000_000)
     ),
+    splitContext:
+      typeof value.splitContext === "boolean"
+        ? value.splitContext
+        : base.splitContext,
   };
 }
 
@@ -153,6 +159,13 @@ const NUMERIC_ENV: ReadonlyArray<readonly [string, keyof FastJevConfig]> = [
  * settings.json layers over. Precedence everywhere is: settings.json wins, then
  * the environment, then the built-in default.
  */
+function envBool(value: string | undefined): boolean | undefined {
+  const text = value?.trim().toLowerCase();
+  if (text === "1" || text === "true" || text === "yes") return true;
+  if (text === "0" || text === "false" || text === "no") return false;
+  return undefined;
+}
+
 export function parseEnvConfig(
   env: Readonly<Record<string, string | undefined>> = process.env,
   base: FastJevConfig = DEFAULT_CONFIG
@@ -166,6 +179,8 @@ export function parseEnvConfig(
   if (model) value.model = model;
   const baseUrl = env.FAST_JEV_BASE_URL?.trim();
   if (baseUrl) value.baseUrl = baseUrl;
+  const splitContext = envBool(env.FAST_JEV_SPLIT_CONTEXT);
+  if (splitContext !== undefined) value.splitContext = splitContext;
   return parseConfig(value, base);
 }
 

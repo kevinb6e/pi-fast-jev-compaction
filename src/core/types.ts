@@ -84,6 +84,7 @@ export interface CompactOptions {
   maxStateTokens?: number;
   maxRequestTokens?: number;
   truncateHeadChars?: number;
+  splitContext?: boolean;
 }
 
 export interface ResolvedCompactOptions {
@@ -93,6 +94,7 @@ export interface ResolvedCompactOptions {
   maxStateTokens: number;
   maxRequestTokens: number;
   truncateHeadChars: number;
+  splitContext: boolean;
 }
 
 export interface DecisionStats {
