@@ -263,10 +263,10 @@ export function installFastJevCompaction(
       event.signal,
       true
     );
-    if (
-      run.outcome !== "applied" ||
-      run.stats.reductionRatio < config.minReductionRatio
-    ) {
+    if (run.outcome !== "applied") {
+      return fallbackCompaction();
+    }
+    if (run.stats.reductionRatio < config.minReductionRatio) {
       ctx.ui.notify(
         "fast-jev: reduction too small; using Pi's built-in summary",
         "warning"

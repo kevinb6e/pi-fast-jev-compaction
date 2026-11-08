@@ -28,7 +28,7 @@ export const DEFAULT_CONFIG: FastJevConfig = {
   goal: "",
   keepThreshold: 0.5,
   preserveRecentMessages: 6,
-  maxStateTokens: 25_000,
+  maxStateTokens: 29_000,
   maxRequestTokens: 30_000,
   truncateHeadChars: 300,
   compactAtPercent: 60,
